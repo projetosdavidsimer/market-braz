@@ -10,19 +10,19 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-white [a&]:hover:bg-primary/90",
+          "border-transparent bg-slate-700 text-white dark:bg-slate-600 [a&]:hover:bg-slate-800 dark:[a&]:hover:bg-slate-700",
         secondary:
-          "border-transparent bg-secondary text-white [a&]:hover:bg-secondary/90",
+          "border-transparent bg-gray-700 text-white dark:bg-gray-600 [a&]:hover:bg-gray-800 dark:[a&]:hover:bg-gray-700",
         destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
+          "border-transparent bg-red-600 text-white dark:bg-red-700 [a&]:hover:bg-red-700 dark:[a&]:hover:bg-red-800 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "text-white border-border bg-gray-600 [a&]:hover:bg-gray-700 [a&]:hover:text-white",
+          "text-white border-gray-300 bg-gray-700 dark:bg-gray-600 dark:border-gray-500 [a&]:hover:bg-gray-800 dark:[a&]:hover:bg-gray-700 [a&]:hover:text-white",
         success:
-          "border-transparent bg-green-600 text-white dark:bg-green-700 [a&]:hover:bg-green-700 dark:[a&]:hover:bg-green-800",
+          "border-transparent bg-green-700 text-white dark:bg-green-600 [a&]:hover:bg-green-800 dark:[a&]:hover:bg-green-700",
         warning:
-          "border-transparent bg-yellow-600 text-white dark:bg-yellow-700 [a&]:hover:bg-yellow-700 dark:[a&]:hover:bg-yellow-800",
+          "border-transparent bg-orange-600 text-white dark:bg-orange-700 [a&]:hover:bg-orange-700 dark:[a&]:hover:bg-orange-800",
         info:
-          "border-transparent bg-blue-600 text-white dark:bg-blue-700 [a&]:hover:bg-blue-700 dark:[a&]:hover:bg-blue-800",
+          "border-transparent bg-blue-700 text-white dark:bg-blue-600 [a&]:hover:bg-blue-800 dark:[a&]:hover:bg-blue-700",
       },
     },
     defaultVariants: {
