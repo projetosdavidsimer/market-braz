@@ -167,6 +167,11 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   if (collapsible === "none") {
     return (
@@ -176,6 +181,7 @@ function Sidebar({
           "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
           className
         )}
+        suppressHydrationWarning
         {...props}
       >
         {children}
@@ -184,7 +190,7 @@ function Sidebar({
   }
 
   return (
-    <>
+    <div suppressHydrationWarning>
       {/* Desktop Sidebar - Always rendered */}
       <div
         className="group peer text-sidebar-foreground hidden md:block"
@@ -193,6 +199,7 @@ function Sidebar({
         data-variant={variant}
         data-side={side}
         data-slot="sidebar"
+        suppressHydrationWarning
       >
         {/* This is what handles the sidebar gap on desktop */}
         <div
@@ -231,8 +238,8 @@ function Sidebar({
         </div>
       </div>
 
-      {/* Mobile Sidebar - Only rendered when mobile */}
-      {isMobile && (
+      {/* Mobile Sidebar - Only rendered after mount and when mobile */}
+      {mounted && isMobile && (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
             data-sidebar="sidebar"
@@ -254,7 +261,7 @@ function Sidebar({
           </SheetContent>
         </Sheet>
       )}
-    </>
+    </div>
   )
 }
 
