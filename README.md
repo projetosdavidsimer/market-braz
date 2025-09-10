@@ -1,7 +1,7 @@
 # Market Braz
 
 <div align="center">
-  <img src="./public/MKB-LOGO.png" alt="Market Braz Logo" width="200" height="auto">
+  <img src="https://raw.githubusercontent.com/projetosdavidsimer/market-braz/main/public/MKB-LOGO.png" alt="Market Braz Logo" width="200" height="auto">
   
   <h3>🚀 Plataforma de Delivery Completa</h3>
   <p>Sistema de gestão financeira e operacional para marketplace de delivery</p>
