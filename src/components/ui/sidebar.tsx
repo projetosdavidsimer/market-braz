@@ -147,9 +147,7 @@ function SidebarProvider({
           suppressHydrationWarning
           {...props}
         >
-          <div suppressHydrationWarning>
-            {children}
-          </div>
+          {children}
         </div>
       </TooltipProvider>
     </SidebarContext.Provider>
