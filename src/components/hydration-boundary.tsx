@@ -29,9 +29,10 @@ export function RadixHydrationBoundary({ children }: { children: React.ReactNode
     setMounted(true)
   }, [])
 
+  // Render same structure for SSR and client to avoid hydration mismatch
   return (
     <div suppressHydrationWarning data-hydration-boundary="radix">
-      {mounted ? children : <div style={{ visibility: 'hidden' }}>{children}</div>}
+      {children}
     </div>
   )
 }
