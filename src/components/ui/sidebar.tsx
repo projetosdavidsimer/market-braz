@@ -128,6 +128,12 @@ function SidebarProvider({
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
   )
 
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <SidebarContext.Provider value={contextValue}>
       <TooltipProvider delayDuration={0}>
@@ -145,6 +151,7 @@ function SidebarProvider({
             className
           )}
           suppressHydrationWarning
+          data-hydrated={mounted}
           {...props}
         >
           {children}
