@@ -189,17 +189,57 @@ function Sidebar({
     )
   }
 
-  return (
-    <div suppressHydrationWarning>
-      {/* Desktop Sidebar - Always rendered */}
+  // Render nothing during SSR to avoid hydration issues
+  if (!mounted) {
+    return (
       <div
         className="group peer text-sidebar-foreground hidden md:block"
-        data-state={mounted ? state : "expanded"}
-        data-collapsible={mounted && state === "collapsed" ? collapsible : ""}
+        data-state="expanded"
+        data-collapsible=""
         data-variant={variant}
         data-side={side}
         data-slot="sidebar"
-        suppressHydrationWarning
+      >
+        <div
+          data-slot="sidebar-gap"
+          className="relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear"
+        />
+        <div
+          data-slot="sidebar-container"
+          className={cn(
+            "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
+            side === "left"
+              ? "left-0"
+              : "right-0",
+            variant === "floating" || variant === "inset"
+              ? "p-2"
+              : "group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            className
+          )}
+          {...props}
+        >
+          <div
+            data-sidebar="sidebar"
+            data-slot="sidebar-inner"
+            className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          >
+            {children}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {/* Desktop Sidebar - Always rendered after mount */}
+      <div
+        className="group peer text-sidebar-foreground hidden md:block"
+        data-state={state}
+        data-collapsible={state === "collapsed" ? collapsible : ""}
+        data-variant={variant}
+        data-side={side}
+        data-slot="sidebar"
       >
         {/* This is what handles the sidebar gap on desktop */}
         <div
@@ -212,7 +252,6 @@ function Sidebar({
               ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
               : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
           )}
-          suppressHydrationWarning
         />
         <div
           data-slot="sidebar-container"
@@ -227,22 +266,20 @@ function Sidebar({
               : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
           )}
-          suppressHydrationWarning
           {...props}
         >
           <div
             data-sidebar="sidebar"
             data-slot="sidebar-inner"
             className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
-            suppressHydrationWarning
           >
             {children}
           </div>
         </div>
       </div>
 
-      {/* Mobile Sidebar - Only rendered after mount and when mobile */}
-      {mounted && isMobile && (
+      {/* Mobile Sidebar - Only rendered when mobile */}
+      {isMobile && (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
             data-sidebar="sidebar"
@@ -264,7 +301,7 @@ function Sidebar({
           </SheetContent>
         </Sheet>
       )}
-    </div>
+    </>
   )
 }
 
