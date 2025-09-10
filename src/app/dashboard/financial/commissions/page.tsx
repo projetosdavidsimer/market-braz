@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -19,6 +22,14 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ModeToggle } from "@/components/mode-toggle"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { 
   DollarSign,
   Percent,
@@ -32,10 +43,89 @@ import {
   Users,
   BarChart3,
   CheckCircle,
-  Clock
+  Clock,
+  FileText,
+  Package,
+  Settings,
+  CreditCard
 } from "lucide-react"
 
 export default function CommissionsPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState("Março 2024")
+  const [periodModalOpen, setPeriodModalOpen] = useState(false)
+  const [exportModalOpen, setExportModalOpen] = useState(false)
+  const [processPaymentModalOpen, setProcessPaymentModalOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [configRatesModalOpen, setConfigRatesModalOpen] = useState(false)
+
+  const handlePeriodChange = () => {
+    setPeriodModalOpen(true)
+  }
+
+  const handlePeriodSelect = (period: string) => {
+    setSelectedPeriod(period)
+    setPeriodModalOpen(false)
+  }
+
+  const handleExport = () => {
+    setExportModalOpen(true)
+  }
+
+  const handleExportData = (format: string) => {
+    // Simular download
+    const data = {
+      period: selectedPeriod,
+      storeCommissions: commissionData,
+      deliveryCommissions: deliveryCommissions,
+      totalCommissions: totalCommissions,
+      platformCommission: totalPlatformCommission
+    }
+    
+    const dataStr = format === 'json' ? JSON.stringify(data, null, 2) : 
+                   format === 'csv' ? convertToCSV(data) : 
+                   JSON.stringify(data, null, 2)
+    
+    const dataBlob = new Blob([dataStr], { type: format === 'csv' ? 'text/csv' : 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `comissoes_${selectedPeriod.toLowerCase().replace(/\s+/g, '_')}.${format}`
+    link.click()
+    URL.revokeObjectURL(url)
+    setExportModalOpen(false)
+  }
+
+  const convertToCSV = (data: any) => {
+    const headers = ['Loja', 'Proprietário', 'Receita', 'Taxa', 'Comissão', 'Status']
+    const rows = data.storeCommissions.map((item: any) => [
+      item.store,
+      item.owner,
+      item.revenue,
+      item.commissionRate,
+      item.commissionAmount,
+      item.status
+    ])
+    
+    return [headers, ...rows].map(row => row.join(',')).join('\n')
+  }
+
+  const handleProcessPayments = () => {
+    setProcessPaymentModalOpen(true)
+  }
+
+  const handleGenerateReport = () => {
+    setReportModalOpen(true)
+  }
+
+  const handleConfigureRates = () => {
+    setConfigRatesModalOpen(true)
+  }
+
+  const processSelectedPayments = () => {
+    // Simular processamento de pagamentos
+    alert('Pagamentos processados com sucesso!')
+    setProcessPaymentModalOpen(false)
+  }
   const commissionData = [
     {
       store: "Padaria Central",
@@ -244,58 +334,68 @@ export default function CommissionsPage() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filtros
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handlePeriodChange}>
                 <Calendar className="w-4 h-4 mr-2" />
-                Período
+                {selectedPeriod}
               </Button>
-              <Button>
+              <Button onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
                 Exportar
               </Button>
             </div>
           </div>
 
-          {/* Platform Commission - Sua Parte */}
-          <Card className="bg-card border-border">
+          {/* Suas Receitas Totais */}
+          <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-foreground">
-                <TrendingUp className="w-6 h-6 text-primary" />
-                <span>Sua Receita da Plataforma</span>
+              <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+                <span>Suas Receitas Totais - Market Braz</span>
               </CardTitle>
-              <CardDescription className="text-muted-foreground">
-                R$ 1,00 por entrega realizada • Comissão do Market Braz
+              <CardDescription className="text-green-700 dark:text-green-300">
+                Todas as fontes de receita da sua plataforma
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4">
-                <div className="text-center p-4 bg-muted rounded-lg border border-border shadow-sm">
-                  <p className="text-sm text-muted-foreground mb-1">Total de Entregas</p>
-                  <p className="text-2xl font-bold text-foreground">{totalDeliveries}</p>
+                <div className="text-center p-4 bg-white dark:bg-gray-900 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                  <p className="text-sm text-muted-foreground mb-1">Taxa por Entrega</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">R$ 1,00</p>
+                  <p className="text-xs text-muted-foreground">{totalDeliveries} entregas</p>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg border border-border shadow-sm">
-                  <p className="text-sm text-muted-foreground mb-1">Por Entrega</p>
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">R$ {platformCommissionPerDelivery.toFixed(2).replace(".", ",")}</p>
+                <div className="text-center p-4 bg-white dark:bg-gray-900 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                  <p className="text-sm text-muted-foreground mb-1">Comissões das Lojas</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">R$ {totalStoreCommissions.toFixed(2).replace(".", ",")}</p>
+                  <p className="text-xs text-muted-foreground">6 lojas ativas</p>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg border border-border shadow-sm">
-                  <p className="text-sm text-muted-foreground mb-1">Já Recebido</p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">R$ {paidPlatformCommission.toFixed(2).replace(".", ",")}</p>
+                <div className="text-center p-4 bg-white dark:bg-gray-900 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                  <p className="text-sm text-muted-foreground mb-1">Mensalidades</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">R$ 1.200,00</p>
+                  <p className="text-xs text-muted-foreground">R$ 200/loja</p>
                 </div>
-                <div className="text-center p-4 bg-primary/10 dark:bg-muted rounded-lg border-2 border-primary shadow-sm">
-                  <p className="text-sm text-primary/80 dark:text-muted-foreground mb-1 font-medium">Sua Receita Total</p>
-                  <p className="text-3xl font-bold text-primary">R$ {totalPlatformCommission.toFixed(2).replace(".", ",")}</p>
+                <div className="text-center p-4 bg-green-100 dark:bg-green-900 rounded-lg border-2 border-green-300 dark:border-green-700 shadow-sm">
+                  <p className="text-sm text-green-700 dark:text-green-300 mb-1 font-medium">RECEITA TOTAL</p>
+                  <p className="text-3xl font-bold text-green-700 dark:text-green-300">R$ {(totalPlatformCommission + totalStoreCommissions + 1200).toFixed(2).replace(".", ",")}</p>
                 </div>
               </div>
               
-              {pendingPlatformCommission > 0 && (
-                <div className="mt-4 p-3 bg-muted rounded-lg border border-border shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Pendente de recebimento:</span>
-                    <span className="font-bold text-lg text-amber-600 dark:text-amber-400">
-                      R$ {pendingPlatformCommission.toFixed(2).replace(".", ",")}
-                    </span>
+              <div className="mt-4 p-4 bg-white dark:bg-gray-900 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">Detalhamento das Receitas:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                  <div className="flex items-center">
+                    <span className="text-muted-foreground">Taxa por Entrega:</span>
+                    <span className="font-bold text-green-600 ml-2">+R$ {totalPlatformCommission.toFixed(2).replace(".", ",")}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-muted-foreground">Comissões das Lojas:</span>
+                    <span className="font-bold text-green-600 ml-2">+R$ {totalStoreCommissions.toFixed(2).replace(".", ",")}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-muted-foreground">Mensalidades:</span>
+                    <span className="font-bold text-green-600 ml-2">+R$ 1.200,00</span>
                   </div>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
 
@@ -423,12 +523,12 @@ export default function CommissionsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Truck className="w-5 h-5 text-red-600" />
+                <Truck className="w-5 h-5 text-blue-600" />
                 <span>Pagamentos aos Entregadores</span>
-                <Badge variant="outline" className="text-red-600 border-red-600">Você Paga</Badge>
+                <Badge variant="outline" className="text-blue-600 border-blue-600">R$ 3,50/entrega</Badge>
               </CardTitle>
               <CardDescription>
-                Valor que você paga para cada entregador por entrega realizada
+                Cliente paga R$ 4,50 • Entregador recebe R$ 3,50 • Você recebe R$ 1,00 automaticamente
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -497,20 +597,27 @@ export default function CommissionsPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                    Receitas das Lojas:
+                    Comissões das Lojas:
                   </span>
                   <span className="font-bold text-green-600">+R$ {totalStoreCommissions.toFixed(2).replace(".", ",")}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm flex items-center">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                    Pagamentos Entregadores:
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Taxa por Entrega:
                   </span>
-                  <span className="font-bold text-red-600">-R$ {totalDeliveryCommissions.toFixed(2).replace(".", ",")}</span>
+                  <span className="font-bold text-green-600">+R$ {totalPlatformCommission.toFixed(2).replace(".", ",")}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm flex items-center">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Mensalidades:
+                  </span>
+                  <span className="font-bold text-green-600">+R$ 1.200,00</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
-                  <span className="text-sm font-medium">Saldo Líquido:</span>
-                  <span className="font-bold text-lg text-primary">R$ {(totalStoreCommissions - totalDeliveryCommissions).toFixed(2).replace(".", ",")}</span>
+                  <span className="text-sm font-medium">RECEITA TOTAL:</span>
+                  <span className="font-bold text-lg text-green-600">R$ {(totalStoreCommissions + totalPlatformCommission + 1200).toFixed(2).replace(".", ",")}</span>
                 </div>
               </CardContent>
             </Card>
@@ -564,16 +671,16 @@ export default function CommissionsPage() {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleProcessPayments}>
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Processar Pagamentos
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleGenerateReport}>
                   <Download className="w-4 h-4 mr-2" />
                   Relatório de Comissões
                 </Button>
-                <Button className="w-full" variant="outline">
-                  <Users className="w-4 h-4 mr-2" />
+                <Button className="w-full" variant="outline" onClick={handleConfigureRates}>
+                  <Settings className="w-4 h-4 mr-2" />
                   Configurar Taxas
                 </Button>
               </CardContent>
@@ -581,6 +688,390 @@ export default function CommissionsPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Modal de Seleção de Período */}
+      <Dialog open={periodModalOpen} onOpenChange={setPeriodModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Selecionar Período</span>
+            </DialogTitle>
+            <DialogDescription>
+              Escolha o período para visualizar as comissões
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-2 mt-4">
+            <Button
+              variant={selectedPeriod === "Janeiro 2024" ? "default" : "outline"}
+              className="justify-start"
+              onClick={() => handlePeriodSelect("Janeiro 2024")}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Janeiro 2024
+            </Button>
+            <Button
+              variant={selectedPeriod === "Fevereiro 2024" ? "default" : "outline"}
+              className="justify-start"
+              onClick={() => handlePeriodSelect("Fevereiro 2024")}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Fevereiro 2024
+            </Button>
+            <Button
+              variant={selectedPeriod === "Março 2024" ? "default" : "outline"}
+              className="justify-start"
+              onClick={() => handlePeriodSelect("Março 2024")}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Março 2024
+            </Button>
+            <Button
+              variant={selectedPeriod === "Abril 2024" ? "default" : "outline"}
+              className="justify-start"
+              onClick={() => handlePeriodSelect("Abril 2024")}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Abril 2024
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Exportação */}
+      <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Download className="w-5 h-5" />
+              <span>Exportar Dados de Comissões</span>
+            </DialogTitle>
+            <DialogDescription>
+              Escolha o formato para exportar os dados de comissões do período: {selectedPeriod}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-3 mt-4">
+            <Button
+              variant="outline"
+              className="justify-start h-auto p-4"
+              onClick={() => handleExportData('csv')}
+            >
+              <div className="flex items-center space-x-3">
+                <FileText className="w-5 h-5 text-green-600" />
+                <div className="text-left">
+                  <p className="font-medium">Exportar como CSV</p>
+                  <p className="text-sm text-muted-foreground">Planilha compatível com Excel</p>
+                </div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto p-4"
+              onClick={() => handleExportData('json')}
+            >
+              <div className="flex items-center space-x-3">
+                <Package className="w-5 h-5 text-blue-600" />
+                <div className="text-left">
+                  <p className="font-medium">Exportar como JSON</p>
+                  <p className="text-sm text-muted-foreground">Dados estruturados para desenvolvimento</p>
+                </div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto p-4"
+              onClick={() => handleExportData('pdf')}
+            >
+              <div className="flex items-center space-x-3">
+                <FileText className="w-5 h-5 text-red-600" />
+                <div className="text-left">
+                  <p className="font-medium">Exportar como PDF</p>
+                  <p className="text-sm text-muted-foreground">Relatório formatado para impressão</p>
+                </div>
+              </div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Processamento de Pagamentos */}
+      <Dialog open={processPaymentModalOpen} onOpenChange={setProcessPaymentModalOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <CreditCard className="w-5 h-5" />
+              <span>Processar Pagamentos</span>
+            </DialogTitle>
+            <DialogDescription>
+              Gerencie pagamentos que você deve fazer e recebimentos pendentes
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            {/* Pagamentos aos Entregadores (VOCÊ PAGA) */}
+            <div className="border rounded-lg p-4">
+              <h4 className="font-semibold mb-3 flex items-center">
+                <Truck className="w-4 h-4 mr-2 text-red-600" />
+                Pagamentos aos Entregadores (Você Paga)
+              </h4>
+              <div className="space-y-3">
+                {deliveryCommissions.filter(item => item.status === "Pendente").map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                    <div className="flex items-center space-x-3">
+                      <input type="checkbox" className="rounded" defaultChecked />
+                      <div>
+                        <p className="font-medium">{item.driver}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {item.deliveries} entregas × R$ 3,50 = {item.totalCommission}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-red-100 text-red-800">Pagar</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recebimentos das Lojas (VOCÊ RECEBE) */}
+            <div className="border rounded-lg p-4">
+              <h4 className="font-semibold mb-3 flex items-center">
+                <Store className="w-4 h-4 mr-2 text-green-600" />
+                Recebimentos das Lojas (Você Recebe)
+              </h4>
+              <div className="space-y-3">
+                {commissionData.filter(item => item.status === "Pendente").map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="flex items-center space-x-3">
+                      <input type="checkbox" className="rounded" defaultChecked />
+                      <div>
+                        <p className="font-medium">{item.store}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Comissão {item.commissionRate}: {item.commissionAmount}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">Receber</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setProcessPaymentModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={processSelectedPayments}>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Processar Selecionados
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Relatório */}
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5" />
+              <span>Relatório de Comissões</span>
+            </DialogTitle>
+            <DialogDescription>
+              Relatório detalhado das comissões no período: {selectedPeriod}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+            {/* Resumo Executivo */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Resumo Executivo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Suas Receitas */}
+                <div>
+                  <h4 className="font-semibold text-green-700 mb-3 flex items-center">
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Suas Receitas (Você Recebe)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                      <Label className="text-sm font-medium text-green-700">Taxa por Entrega</Label>
+                      <p className="text-xl font-bold text-green-600">R$ {totalPlatformCommission.toFixed(2).replace(".", ",")}</p>
+                    </div>
+                    <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                      <Label className="text-sm font-medium text-green-700">Comissões das Lojas</Label>
+                      <p className="text-xl font-bold text-green-600">R$ {totalStoreCommissions.toFixed(2).replace(".", ",")}</p>
+                    </div>
+                    <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                      <Label className="text-sm font-medium text-green-700">Mensalidades</Label>
+                      <p className="text-xl font-bold text-green-600">R$ 1.200,00</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 p-3 bg-green-100 dark:bg-green-900 rounded-lg border-2 border-green-300 dark:border-green-700">
+                    <Label className="text-sm font-medium text-green-800">RECEITA TOTAL</Label>
+                    <p className="text-2xl font-bold text-green-700">R$ {(totalPlatformCommission + totalStoreCommissions + 1200).toFixed(2).replace(".", ",")}</p>
+                  </div>
+                </div>
+
+                {/* Seus Pagamentos */}
+                <div>
+                  <h4 className="font-semibold text-red-700 mb-3 flex items-center">
+                    <Truck className="w-4 h-4 mr-2" />
+                    Seus Pagamentos (Você Paga)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                      <Label className="text-sm font-medium text-red-700">Pagamentos aos Entregadores</Label>
+                      <p className="text-xl font-bold text-red-600">R$ {totalDeliveryCommissions.toFixed(2).replace(".", ",")}</p>
+                    </div>
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <Label className="text-sm font-medium text-blue-700">LUCRO LÍQUIDO</Label>
+                      <p className="text-xl font-bold text-blue-600">R$ {(totalPlatformCommission + totalStoreCommissions + 1200 - totalDeliveryCommissions).toFixed(2).replace(".", ",")}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Detalhamento por Loja */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Comissões por Loja</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {commissionData.map((commission, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Store className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <p className="font-medium">{commission.store}</p>
+                          <p className="text-sm text-muted-foreground">{commission.owner}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-blue-600">{commission.commissionAmount}</p>
+                        <p className="text-sm text-muted-foreground">{commission.commissionRate}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Detalhamento por Entregador */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Pagamentos aos Entregadores</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {deliveryCommissions.map((commission, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Truck className="w-5 h-5 text-orange-600" />
+                        <div>
+                          <p className="font-medium">{commission.driver}</p>
+                          <p className="text-sm text-muted-foreground">{commission.deliveries} entregas</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-orange-600">{commission.totalCommission}</p>
+                        <p className="text-sm text-muted-foreground">{commission.commissionRate}/entrega</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Botões de Ação */}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => handleExportData('pdf')}>
+                <Download className="w-4 h-4 mr-2" />
+                Exportar PDF
+              </Button>
+              <Button onClick={() => setReportModalOpen(false)}>
+                Fechar Relatório
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Configuração de Taxas */}
+      <Dialog open={configRatesModalOpen} onOpenChange={setConfigRatesModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Settings className="w-5 h-5" />
+              <span>Configurar Taxas de Comissão</span>
+            </DialogTitle>
+            <DialogDescription>
+              Configure as taxas de comissão por categoria de estabelecimento
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="padaria">Padaria</Label>
+                <div className="flex items-center space-x-2">
+                  <Input id="padaria" type="number" defaultValue="8" className="w-20" />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supermercado">Supermercado</Label>
+                <div className="flex items-center space-x-2">
+                  <Input id="supermercado" type="number" defaultValue="6" className="w-20" />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="farmacia">Farmácia</Label>
+                <div className="flex items-center space-x-2">
+                  <Input id="farmacia" type="number" defaultValue="10" className="w-20" />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="restaurante">Restaurante</Label>
+                <div className="flex items-center space-x-2">
+                  <Input id="restaurante" type="number" defaultValue="12" className="w-20" />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="entregador">Taxa por Entrega (Entregadores)</Label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm">R$</span>
+                  <Input id="entregador" type="number" step="0.50" defaultValue="3.50" className="w-20" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="plataforma">Comissão da Plataforma (por entrega)</Label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm">R$</span>
+                  <Input id="plataforma" type="number" step="0.10" defaultValue="1.00" className="w-20" />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setConfigRatesModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Configurações salvas com sucesso!')
+                setConfigRatesModalOpen(false)
+              }}>
+                <Settings className="w-4 h-4 mr-2" />
+                Salvar Configurações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   )
 }

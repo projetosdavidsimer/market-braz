@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -18,7 +21,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { ModeToggle } from "@/components/mode-toggle"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { 
   FileText,
   Download,
@@ -34,10 +52,74 @@ import {
   Truck,
   CreditCard,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Bell,
+  Package
 } from "lucide-react"
 
 export default function ReportsPage() {
+  const [periodModalOpen, setPeriodModalOpen] = useState(false)
+  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const [generateReportModalOpen, setGenerateReportModalOpen] = useState(false)
+  const [scheduleReportModalOpen, setScheduleReportModalOpen] = useState(false)
+  const [batchDownloadModalOpen, setBatchDownloadModalOpen] = useState(false)
+  const [executiveReportModalOpen, setExecutiveReportModalOpen] = useState(false)
+  const [alertsModalOpen, setAlertsModalOpen] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<any>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  const handlePeriodSelect = () => {
+    setPeriodModalOpen(true)
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    // Simular carregamento
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    setIsRefreshing(false)
+    alert('Relatórios atualizados!')
+  }
+
+  const handleView = (report: any) => {
+    setSelectedReport(report)
+    setViewModalOpen(true)
+  }
+
+  const handleDownload = (report: any) => {
+    // Simular download
+    const link = document.createElement('a')
+    link.href = '#'
+    link.download = `${report.name.replace(/\s+/g, '_')}.${report.format.toLowerCase()}`
+    link.click()
+    alert(`Download iniciado: ${report.name}`)
+  }
+
+  const handleGenerateReport = () => {
+    setGenerateReportModalOpen(true)
+  }
+
+  const handleScheduleReport = () => {
+    setScheduleReportModalOpen(true)
+  }
+
+  const handleBatchDownload = () => {
+    setBatchDownloadModalOpen(true)
+  }
+
+  const handleExecutiveReport = () => {
+    setExecutiveReportModalOpen(true)
+  }
+
+  const handleConfigureAlerts = () => {
+    setAlertsModalOpen(true)
+  }
+
+  const handleBatchDownloadExecute = (selectedReports: string[]) => {
+    // Simular download em lote
+    const zip = selectedReports.join(', ')
+    alert(`Download em lote iniciado para: ${zip}`)
+    setBatchDownloadModalOpen(false)
+  }
   const availableReports = [
     {
       id: 1,
@@ -231,13 +313,13 @@ export default function ReportsPage() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filtros
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handlePeriodSelect}>
                 <Calendar className="w-4 h-4 mr-2" />
                 Período
               </Button>
-              <Button>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Atualizar
+              <Button onClick={handleRefresh} disabled={isRefreshing}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Atualizando...' : 'Atualizar'}
               </Button>
             </div>
           </div>
@@ -315,11 +397,21 @@ export default function ReportsPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" disabled={report.status !== "Disponível"}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        disabled={report.status !== "Disponível"}
+                        onClick={() => handleView(report)}
+                      >
                         <Eye className="w-4 h-4 mr-1" />
                         Visualizar
                       </Button>
-                      <Button variant="outline" size="sm" disabled={report.status !== "Disponível"}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={report.status !== "Disponível"}
+                        onClick={() => handleDownload(report)}
+                      >
                         <Download className="w-4 h-4 mr-1" />
                         Download
                       </Button>
@@ -368,7 +460,7 @@ export default function ReportsPage() {
                     </label>
                   </div>
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={handleGenerateReport}>
                   <FileText className="w-4 h-4 mr-2" />
                   Gerar Relatório
                 </Button>
@@ -403,7 +495,7 @@ export default function ReportsPage() {
                   <label className="text-sm font-medium">Email</label>
                   <Input type="email" placeholder="admin@marketbraz.com" />
                 </div>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleScheduleReport}>
                   <Calendar className="w-4 h-4 mr-2" />
                   Agendar Relatório
                 </Button>
@@ -476,16 +568,16 @@ export default function ReportsPage() {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleBatchDownload}>
                   <Download className="w-4 h-4 mr-2" />
                   Download em Lote
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleExecutiveReport}>
                   <FileText className="w-4 h-4 mr-2" />
                   Relatório Executivo
                 </Button>
-                <Button className="w-full" variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
+                <Button className="w-full" variant="outline" onClick={handleConfigureAlerts}>
+                  <Bell className="w-4 h-4 mr-2" />
                   Configurar Alertas
                 </Button>
               </CardContent>
@@ -493,6 +585,498 @@ export default function ReportsPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Modal de Seleção de Período */}
+      <Dialog open={periodModalOpen} onOpenChange={setPeriodModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Selecionar Período</span>
+            </DialogTitle>
+            <DialogDescription>
+              Escolha o período para filtrar os relatórios
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Período Predefinido</Label>
+              <Select defaultValue="last-month">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o período" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Hoje</SelectItem>
+                  <SelectItem value="yesterday">Ontem</SelectItem>
+                  <SelectItem value="last-7-days">Últimos 7 dias</SelectItem>
+                  <SelectItem value="last-30-days">Últimos 30 dias</SelectItem>
+                  <SelectItem value="last-month">Mês passado</SelectItem>
+                  <SelectItem value="last-quarter">Último trimestre</SelectItem>
+                  <SelectItem value="custom">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data Inicial</Label>
+                <Input type="date" />
+              </div>
+              <div className="space-y-2">
+                <Label>Data Final</Label>
+                <Input type="date" />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setPeriodModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Período aplicado!')
+                setPeriodModalOpen(false)
+              }}>
+                Aplicar Filtro
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Visualização */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center space-x-2">
+              <Eye className="w-5 h-5" />
+              <span>Visualizar Relatório</span>
+            </DialogTitle>
+            <DialogDescription>
+              {selectedReport?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedReport && (
+            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informações do Relatório</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Nome</Label>
+                      <p className="text-sm">{selectedReport.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Categoria</Label>
+                      <p className="text-sm">{selectedReport.category}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Formato</Label>
+                      <p className="text-sm">{selectedReport.format}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Tamanho</Label>
+                      <p className="text-sm">{selectedReport.size}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Descrição</Label>
+                    <p className="text-sm">{selectedReport.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Preview do Conteúdo</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg min-h-[300px] flex items-center justify-center">
+                    <div className="text-center">
+                      <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-500">Preview do relatório seria exibido aqui</p>
+                      <p className="text-sm text-gray-400 mt-2">
+                        Formato: {selectedReport.format} • Tamanho: {selectedReport.size}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end space-x-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => handleDownload(selectedReport)}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+                <Button onClick={() => setViewModalOpen(false)}>
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Gerar Relatório */}
+      <Dialog open={generateReportModalOpen} onOpenChange={setGenerateReportModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5" />
+              <span>Gerar Relatório Personalizado</span>
+            </DialogTitle>
+            <DialogDescription>
+              Configure as opções para gerar um novo relatório
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            <div className="space-y-2">
+              <Label>Nome do Relatório</Label>
+              <Input placeholder="Ex: Relatório Financeiro Personalizado" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Período</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <Input type="date" />
+                <Input type="date" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Métricas Incluídas</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <span className="text-sm">Receitas Totais</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <span className="text-sm">Número de Pedidos</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" />
+                  <span className="text-sm">Comissões</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" />
+                  <span className="text-sm">Taxas de Entrega</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" />
+                  <span className="text-sm">Performance das Lojas</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" />
+                  <span className="text-sm">Análise de Usuários</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Formato de Saída</Label>
+              <Select defaultValue="pdf">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="excel">Excel</SelectItem>
+                  <SelectItem value="csv">CSV</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setGenerateReportModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Relatório sendo gerado! Você será notificado quando estiver pronto.')
+                setGenerateReportModalOpen(false)
+              }}>
+                Gerar Relatório
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Agendar Relatório */}
+      <Dialog open={scheduleReportModalOpen} onOpenChange={setScheduleReportModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Agendar Relatório</span>
+            </DialogTitle>
+            <DialogDescription>
+              Configure o envio automático de relatórios por email
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Tipo de Relatório</Label>
+              <Select defaultValue="financial">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="financial">Relatório Financeiro</SelectItem>
+                  <SelectItem value="executive">Dashboard Executivo</SelectItem>
+                  <SelectItem value="performance">Análise de Performance</SelectItem>
+                  <SelectItem value="delivery">Relatório de Entregas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Frequência</Label>
+              <Select defaultValue="monthly">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Diário</SelectItem>
+                  <SelectItem value="weekly">Semanal</SelectItem>
+                  <SelectItem value="monthly">Mensal</SelectItem>
+                  <SelectItem value="quarterly">Trimestral</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Horário de Envio</Label>
+              <Input type="time" defaultValue="09:00" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Emails para Envio</Label>
+              <Input type="email" placeholder="admin@marketbraz.com" />
+              <Input type="email" placeholder="financeiro@marketbraz.com" />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setScheduleReportModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Agendamento configurado com sucesso!')
+                setScheduleReportModalOpen(false)
+              }}>
+                Agendar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Download em Lote */}
+      <Dialog open={batchDownloadModalOpen} onOpenChange={setBatchDownloadModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Package className="w-5 h-5" />
+              <span>Download em Lote</span>
+            </DialogTitle>
+            <DialogDescription>
+              Selecione múltiplos relatórios para download
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {availableReports.filter(r => r.status === "Disponível").map((report) => (
+                <label key={report.id} className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <input type="checkbox" className="rounded" />
+                  <report.icon className="w-5 h-5 text-primary" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{report.name}</p>
+                    <p className="text-xs text-muted-foreground">{report.format} • {report.size}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Formato do Arquivo Compactado</Label>
+              <Select defaultValue="zip">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="zip">ZIP</SelectItem>
+                  <SelectItem value="rar">RAR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setBatchDownloadModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => handleBatchDownloadExecute(['Relatório 1', 'Relatório 2'])}>
+                <Download className="w-4 h-4 mr-2" />
+                Download Selecionados
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Relatório Executivo */}
+      <Dialog open={executiveReportModalOpen} onOpenChange={setExecutiveReportModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>Relatório Executivo</span>
+            </DialogTitle>
+            <DialogDescription>
+              Dashboard com KPIs principais e métricas estratégicas
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+            {/* KPIs Principais */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {quickMetrics.map((metric, index) => (
+                <Card key={index}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">{metric.title}</p>
+                        <p className={`text-2xl font-bold ${metric.color}`}>{metric.value}</p>
+                      </div>
+                      <metric.icon className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      <span className="text-green-600">{metric.change}</span> vs período anterior
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Resumo Financeiro */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Resumo Financeiro</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Receita Bruta</span>
+                    <span className="font-bold text-green-600">R$ 58.760,40</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Comissões Pagas</span>
+                    <span className="font-bold text-blue-600">R$ 12.450,80</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Custos Operacionais</span>
+                    <span className="font-bold text-orange-600">R$ 8.320,15</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded-lg bg-green-50 dark:bg-green-900/20">
+                    <span className="font-medium">Lucro Líquido</span>
+                    <span className="font-bold text-green-600">R$ 37.989,45</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => handleDownload({name: 'Relatório Executivo', format: 'PDF'})}>
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </Button>
+              <Button onClick={() => setExecutiveReportModalOpen(false)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Configurar Alertas */}
+      <Dialog open={alertsModalOpen} onOpenChange={setAlertsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Bell className="w-5 h-5" />
+              <span>Configurar Alertas</span>
+            </DialogTitle>
+            <DialogDescription>
+              Configure notificações automáticas para eventos importantes
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Relatório Falhou</p>
+                  <p className="text-sm text-muted-foreground">Notificar quando um relatório falha ao ser gerado</p>
+                </div>
+                <input type="checkbox" className="rounded" defaultChecked />
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Relatório Pronto</p>
+                  <p className="text-sm text-muted-foreground">Notificar quando um relatório está disponível</p>
+                </div>
+                <input type="checkbox" className="rounded" defaultChecked />
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Limite de Receita</p>
+                  <p className="text-sm text-muted-foreground">Alertar quando receita mensal exceder limite</p>
+                </div>
+                <input type="checkbox" className="rounded" />
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Queda de Performance</p>
+                  <p className="text-sm text-muted-foreground">Alertar sobre quedas significativas nas métricas</p>
+                </div>
+                <input type="checkbox" className="rounded" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email para Alertas</Label>
+              <Input type="email" placeholder="admin@marketbraz.com" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Frequência de Verificação</Label>
+              <Select defaultValue="hourly">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="realtime">Tempo Real</SelectItem>
+                  <SelectItem value="hourly">A cada hora</SelectItem>
+                  <SelectItem value="daily">Diário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setAlertsModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Alertas configurados com sucesso!')
+                setAlertsModalOpen(false)
+              }}>
+                Salvar Configurações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   )
 }

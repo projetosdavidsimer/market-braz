@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -18,7 +21,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { ModeToggle } from "@/components/mode-toggle"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { 
   DollarSign,
   CreditCard,
@@ -32,10 +50,77 @@ import {
   MapPin,
   Clock,
   Percent,
-  Edit
+  Edit,
+  FileText,
+  Package
 } from "lucide-react"
 
 export default function FeesPage() {
+  const [configModalOpen, setConfigModalOpen] = useState(false)
+  const [exportModalOpen, setExportModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [configTaxesModalOpen, setConfigTaxesModalOpen] = useState(false)
+  const [adjustCommissionsModalOpen, setAdjustCommissionsModalOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<any>(null)
+
+  const handleConfigure = () => {
+    setConfigModalOpen(true)
+  }
+
+  const handleExport = () => {
+    setExportModalOpen(true)
+  }
+
+  const handleEdit = (item: any) => {
+    setSelectedItem(item)
+    setEditModalOpen(true)
+  }
+
+  const handleConfigTaxes = () => {
+    setConfigTaxesModalOpen(true)
+  }
+
+  const handleAdjustCommissions = () => {
+    setAdjustCommissionsModalOpen(true)
+  }
+
+  const handleCompleteReport = () => {
+    setReportModalOpen(true)
+  }
+
+  const handleExportData = (format: string) => {
+    // Simular download
+    const data = {
+      deliveryFees,
+      paymentFees,
+      serviceFees,
+      totalRevenue: totalFeesRevenue
+    }
+    
+    const dataStr = format === 'json' ? JSON.stringify(data, null, 2) : 
+                   format === 'csv' ? convertToCSV(data) : 
+                   JSON.stringify(data, null, 2)
+    
+    const dataBlob = new Blob([dataStr], { type: format === 'csv' ? 'text/csv' : 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `taxas_${new Date().toISOString().split('T')[0]}.${format}`
+    link.click()
+    URL.revokeObjectURL(url)
+    setExportModalOpen(false)
+  }
+
+  const convertToCSV = (data: any) => {
+    const headers = ['Tipo', 'Descrição', 'Valor', 'Receita']
+    const rows = [
+      ...data.deliveryFees.map((item: any) => [item.zone, 'Taxa de Entrega', item.avgFee, item.revenue]),
+      ...data.serviceFees.map((item: any) => [item.service, item.description, item.value, item.revenue])
+    ]
+    
+    return [headers, ...rows].map(row => row.join(',')).join('\n')
+  }
   const deliveryFees = [
     {
       zone: "Zona Norte",
@@ -228,11 +313,11 @@ export default function FeesPage() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filtros
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleConfigure}>
                 <Settings className="w-4 h-4 mr-2" />
                 Configurar
               </Button>
-              <Button>
+              <Button onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
                 Exportar
               </Button>
@@ -344,7 +429,7 @@ export default function FeesPage() {
                           <p className="font-bold text-blue-600 dark:text-blue-400">{fee.revenue}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(fee)}>
                         <Edit className="w-4 h-4 mr-1" />
                         Editar
                       </Button>
@@ -453,7 +538,7 @@ export default function FeesPage() {
                           <p className="font-bold text-purple-600 dark:text-purple-400">{fee.revenue}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(fee)}>
                         <Edit className="w-4 h-4 mr-1" />
                         Configurar
                       </Button>
@@ -518,15 +603,15 @@ export default function FeesPage() {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleConfigTaxes}>
                   <Settings className="w-4 h-4 mr-2" />
                   Configurar Taxas
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleAdjustCommissions}>
                   <Percent className="w-4 h-4 mr-2" />
                   Ajustar Comissões
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={handleCompleteReport}>
                   <Download className="w-4 h-4 mr-2" />
                   Relatório Completo
                 </Button>
@@ -535,6 +620,376 @@ export default function FeesPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Modal de Configuração Geral */}
+      <Dialog open={configModalOpen} onOpenChange={setConfigModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Settings className="w-5 h-5" />
+              <span>Configurações Gerais</span>
+            </DialogTitle>
+            <DialogDescription>
+              Configure as preferências gerais do sistema de taxas
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Moeda Padrão</Label>
+              <Select defaultValue="brl">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a moeda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="brl">BRL - Real Brasileiro</SelectItem>
+                  <SelectItem value="usd">USD - Dólar Americano</SelectItem>
+                  <SelectItem value="eur">EUR - Euro</SelectItem>
+                  <SelectItem value="ars">ARS - Peso Argentino</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Arredondamento</Label>
+              <Select defaultValue="2">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o arredondamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Sem casas decimais</SelectItem>
+                  <SelectItem value="1">1 casa decimal</SelectItem>
+                  <SelectItem value="2">2 casas decimais</SelectItem>
+                  <SelectItem value="3">3 casas decimais</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Atualização Automática</Label>
+              <Select defaultValue="daily">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a frequência" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="realtime">Tempo Real</SelectItem>
+                  <SelectItem value="hourly">A cada hora</SelectItem>
+                  <SelectItem value="daily">Diária</SelectItem>
+                  <SelectItem value="weekly">Semanal</SelectItem>
+                  <SelectItem value="monthly">Mensal</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Fuso Horário</Label>
+              <Select defaultValue="america-sao_paulo">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o fuso horário" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="america-sao_paulo">América/São Paulo (UTC-3)</SelectItem>
+                  <SelectItem value="america-new_york">América/Nova York (UTC-5)</SelectItem>
+                  <SelectItem value="europe-london">Europa/Londres (UTC+0)</SelectItem>
+                  <SelectItem value="asia-tokyo">Ásia/Tóquio (UTC+9)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Notificações</Label>
+              <Select defaultValue="all">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione as notificações" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as notificações</SelectItem>
+                  <SelectItem value="important">Apenas importantes</SelectItem>
+                  <SelectItem value="errors">Apenas erros</SelectItem>
+                  <SelectItem value="none">Desabilitadas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setConfigModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Configurações salvas!')
+                setConfigModalOpen(false)
+              }}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Exportação */}
+      <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Download className="w-5 h-5" />
+              <span>Exportar Dados de Taxas</span>
+            </DialogTitle>
+            <DialogDescription>
+              Escolha o formato para exportar os dados de taxas
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-3 mt-4">
+            <Button
+              variant="outline"
+              className="justify-start h-auto p-4"
+              onClick={() => handleExportData('csv')}
+            >
+              <div className="flex items-center space-x-3">
+                <FileText className="w-5 h-5 text-green-600" />
+                <div className="text-left">
+                  <p className="font-medium">Exportar como CSV</p>
+                  <p className="text-sm text-muted-foreground">Planilha compatível com Excel</p>
+                </div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto p-4"
+              onClick={() => handleExportData('json')}
+            >
+              <div className="flex items-center space-x-3">
+                <Package className="w-5 h-5 text-blue-600" />
+                <div className="text-left">
+                  <p className="font-medium">Exportar como JSON</p>
+                  <p className="text-sm text-muted-foreground">Dados estruturados para desenvolvimento</p>
+                </div>
+              </div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Edit className="w-5 h-5" />
+              <span>Editar Taxa</span>
+            </DialogTitle>
+            <DialogDescription>
+              Edite as configurações da taxa selecionada
+            </DialogDescription>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Nome/Zona</Label>
+                <Input defaultValue={selectedItem.zone || selectedItem.service || selectedItem.method} />
+              </div>
+              <div className="space-y-2">
+                <Label>Valor Base</Label>
+                <Input defaultValue={selectedItem.baseRate || selectedItem.value || selectedItem.rate} />
+              </div>
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Input defaultValue={selectedItem.description || "Taxa de entrega"} />
+              </div>
+              <div className="flex justify-end space-x-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={() => {
+                  alert('Taxa atualizada!')
+                  setEditModalOpen(false)
+                }}>
+                  Salvar Alterações
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Configurar Taxas */}
+      <Dialog open={configTaxesModalOpen} onOpenChange={setConfigTaxesModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Settings className="w-5 h-5" />
+              <span>Configurar Taxas</span>
+            </DialogTitle>
+            <DialogDescription>
+              Configure as taxas por categoria e região
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            <div>
+              <h4 className="font-semibold mb-3">Taxas de Entrega por Região</h4>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <Label>Zona Norte</Label>
+                  <Input defaultValue="4.50" />
+                  <span className="text-sm text-muted-foreground self-center">R$/base</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Label>Centro</Label>
+                  <Input defaultValue="3.50" />
+                  <span className="text-sm text-muted-foreground self-center">R$/base</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Taxas de Serviço</h4>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <Label>Taxa Plataforma</Label>
+                  <Input defaultValue="2.5" />
+                  <span className="text-sm text-muted-foreground self-center">%</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Label>Taxa Cancelamento</Label>
+                  <Input defaultValue="2.00" />
+                  <span className="text-sm text-muted-foreground self-center">R$</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setConfigTaxesModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Taxas configuradas!')
+                setConfigTaxesModalOpen(false)
+              }}>
+                Salvar Configurações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Ajustar Comissões */}
+      <Dialog open={adjustCommissionsModalOpen} onOpenChange={setAdjustCommissionsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Percent className="w-5 h-5" />
+              <span>Ajustar Comissões</span>
+            </DialogTitle>
+            <DialogDescription>
+              Ajuste as comissões por categoria de estabelecimento
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Restaurantes</Label>
+              <div className="flex items-center space-x-2">
+                <Input defaultValue="12" className="w-20" />
+                <span className="text-sm text-muted-foreground">%</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Supermercados</Label>
+              <div className="flex items-center space-x-2">
+                <Input defaultValue="6" className="w-20" />
+                <span className="text-sm text-muted-foreground">%</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Farmácias</Label>
+              <div className="flex items-center space-x-2">
+                <Input defaultValue="10" className="w-20" />
+                <span className="text-sm text-muted-foreground">%</span>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setAdjustCommissionsModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                alert('Comissões ajustadas!')
+                setAdjustCommissionsModalOpen(false)
+              }}>
+                Aplicar Alterações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Relatório Completo */}
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5" />
+              <span>Relatório Completo de Taxas</span>
+            </DialogTitle>
+            <DialogDescription>
+              Relatório detalhado de todas as taxas e receitas
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+            {/* Resumo Executivo */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Resumo Executivo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Receita Total de Taxas</Label>
+                    <p className="text-2xl font-bold text-green-600">R$ {totalFeesRevenue.toFixed(2).replace(".", ",")}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Taxa de Crescimento</Label>
+                    <p className="text-2xl font-bold text-blue-600">+8.5%</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Total de Entregas</Label>
+                    <p className="text-2xl font-bold">{deliveryFees.reduce((acc, fee) => acc + fee.orders, 0)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Transações de Pagamento</Label>
+                    <p className="text-2xl font-bold">{paymentFees.reduce((acc, fee) => acc + fee.transactions, 0)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Detalhamento por Categoria */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Receitas por Categoria</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Taxas de Entrega</span>
+                    <span className="font-bold text-blue-600">R$ {totalDeliveryRevenue.toFixed(2).replace(".", ",")}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Custos de Pagamento</span>
+                    <span className="font-bold text-red-600">-R$ {totalPaymentFees.toFixed(2).replace(".", ",")}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Taxas de Serviço</span>
+                    <span className="font-bold text-purple-600">R$ {totalServiceRevenue.toFixed(2).replace(".", ",")}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Botões de Ação */}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => handleExportData('pdf')}>
+                <Download className="w-4 h-4 mr-2" />
+                Exportar PDF
+              </Button>
+              <Button onClick={() => setReportModalOpen(false)}>
+                Fechar Relatório
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   )
 }
