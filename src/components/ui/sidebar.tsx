@@ -151,7 +151,6 @@ function SidebarProvider({
             className
           )}
           suppressHydrationWarning
-          data-hydrated={mounted}
           {...props}
         >
           {children}
