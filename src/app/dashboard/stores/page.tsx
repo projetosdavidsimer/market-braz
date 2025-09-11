@@ -215,7 +215,7 @@ export default function StoresPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Aberta":
-        return <Badge variant="default" className="bg-green-500">Aberta</Badge>
+        return <Badge variant="success">Aberta</Badge>
       case "Fechada":
         return <Badge variant="secondary">Fechada</Badge>
       case "Pendente":
@@ -859,7 +859,7 @@ function ViewStoreDialog({ store, onClose }: { store: StoreData | null, onClose:
   function getStatusBadge(status: string) {
     switch (status) {
       case "Aberta":
-        return <Badge variant="default" className="bg-green-500">Aberta</Badge>
+        return <Badge variant="success">Aberta</Badge>
       case "Fechada":
         return <Badge variant="secondary">Fechada</Badge>
       case "Pendente":

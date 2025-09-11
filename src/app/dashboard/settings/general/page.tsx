@@ -192,7 +192,7 @@ export default function GeneralSettingsPage() {
             </div>
             <div className="flex items-center space-x-2">
               {unsavedChanges && (
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                <Badge variant="warning">
                   Alterações não salvas
                 </Badge>
               )}
@@ -521,7 +521,7 @@ export default function GeneralSettingsPage() {
                       <p className="text-sm font-medium">Admin - São Paulo</p>
                       <p className="text-xs text-muted-foreground">IP: 192.168.1.100 • Última atividade: agora</p>
                     </div>
-                    <Badge variant="default" className="bg-green-500">Ativo</Badge>
+                    <Badge variant="success">Ativo</Badge>
                   </div>
                 </div>
 
@@ -532,7 +532,7 @@ export default function GeneralSettingsPage() {
                       <p className="text-sm font-medium">2FA Habilitado</p>
                       <p className="text-xs text-muted-foreground">Proteção adicional para sua conta</p>
                     </div>
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="success">
                       <Check className="w-3 h-3 mr-1" />
                       Ativo
                     </Badge>

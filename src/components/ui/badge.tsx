@@ -1,52 +1,103 @@
+"use client"
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/lib/utils"
+import { badgeColors, type BadgeColorVariant, getStatusColor } from "@/lib/badge-colors"
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden text-white",
+  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all duration-200 overflow-hidden",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-slate-700 text-white dark:bg-slate-600 [a&]:hover:bg-slate-800 dark:[a&]:hover:bg-slate-700",
-        secondary:
-          "border-transparent bg-gray-700 text-white dark:bg-gray-600 [a&]:hover:bg-gray-800 dark:[a&]:hover:bg-gray-700",
-        destructive:
-          "border-transparent bg-red-600 text-white dark:bg-red-700 [a&]:hover:bg-red-700 dark:[a&]:hover:bg-red-800 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
-        outline:
-          "text-white border-gray-300 bg-gray-700 dark:bg-gray-600 dark:border-gray-500 [a&]:hover:bg-gray-800 dark:[a&]:hover:bg-gray-700 [a&]:hover:text-white",
-        success:
-          "border-transparent bg-green-700 text-white dark:bg-green-600 [a&]:hover:bg-green-800 dark:[a&]:hover:bg-green-700",
-        warning:
-          "border-transparent bg-orange-600 text-white dark:bg-orange-700 [a&]:hover:bg-orange-700 dark:[a&]:hover:bg-orange-800",
-        info:
-          "border-transparent bg-blue-700 text-white dark:bg-blue-600 [a&]:hover:bg-blue-800 dark:[a&]:hover:bg-blue-700",
+        default: "",
+        secondary: "",
+        destructive: "",
+        outline: "",
+        success: "",
+        warning: "",
+        info: "",
+        neutral: "",
+        purple: "",
+        pink: "",
       },
+      size: {
+        default: "px-2 py-0.5 text-xs",
+        sm: "px-1.5 py-0.5 text-xs",
+        lg: "px-3 py-1 text-sm",
+      }
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   }
 )
 
-function Badge({
-  className,
-  variant,
+export interface BadgeProps
+  extends React.ComponentProps<"span">,
+    VariantProps<typeof badgeVariants> {
+  asChild?: boolean
+  status?: string
+}
+
+function Badge({ 
+  className, 
+  variant = "default", 
+  size, 
+  status, 
+  style, 
   asChild = false,
-  ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  ...props 
+}: BadgeProps) {
   const Comp = asChild ? Slot : "span"
+  
+  // Se um status for fornecido, use a cor apropriada
+  const colorVariant: BadgeColorVariant = status 
+    ? getStatusColor(status)
+    : (variant as BadgeColorVariant) || 'neutral'
+
+  // Detecta tema escuro via CSS
+  const [isDark, setIsDark] = React.useState(false)
+  
+  React.useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'))
+    }
+    
+    checkTheme()
+    
+    // Observer para mudanças de tema
+    const observer = new MutationObserver(checkTheme)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+    
+    return () => observer.disconnect()
+  }, [])
+
+  // Obtém as cores do sistema com fallback
+  const colors = badgeColors[colorVariant] || badgeColors.neutral
+  const themeColors = isDark ? colors.dark : colors.light
+
+  const customStyle = {
+    backgroundColor: themeColors.bg,
+    color: themeColors.text,
+    borderColor: themeColors.border,
+    ...style
+  }
 
   return (
-    <Comp
+    <Comp 
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
+      className={cn(badgeVariants({ variant, size }), className)} 
+      style={customStyle}
+      {...props} 
     />
   )
 }
 
 export { Badge, badgeVariants }
+export type { BadgeProps }

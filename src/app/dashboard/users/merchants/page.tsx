@@ -293,16 +293,7 @@ export default function MerchantsPage() {
   ]
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Ativo":
-        return <Badge variant="default">Ativo</Badge>
-      case "Pendente":
-        return <Badge variant="secondary">Pendente</Badge>
-      case "Suspenso":
-        return <Badge variant="destructive">Suspenso</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
+    return <Badge status={status}>{status}</Badge>
   }
 
   const getCategoryColor = (category: string) => {
@@ -460,7 +451,7 @@ export default function MerchantsPage() {
                           </Badge>
                           {getStatusBadge(merchant.status)}
                           {merchant.isOpen && merchant.status === "Ativo" && (
-                            <Badge variant="default" className="bg-green-500">Aberta</Badge>
+                            <Badge status="aberta">Aberta</Badge>
                           )}
                         </div>
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -789,7 +780,7 @@ export default function MerchantsPage() {
                     </Badge>
                     {getStatusBadge(selectedMerchant.status)}
                     {selectedMerchant.isOpen && selectedMerchant.status === "Ativo" && (
-                      <Badge variant="default" className="bg-green-500">Aberta</Badge>
+                      <Badge status="aberta">Aberta</Badge>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">

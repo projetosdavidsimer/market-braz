@@ -825,7 +825,7 @@ export default function CommissionsPage() {
                         </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-red-100 text-red-800">Pagar</Badge>
+                    <Badge variant="destructive">Pagar</Badge>
                   </div>
                 ))}
               </div>
@@ -849,7 +849,7 @@ export default function CommissionsPage() {
                         </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">Receber</Badge>
+                    <Badge variant="success">Receber</Badge>
                   </div>
                 ))}
               </div>

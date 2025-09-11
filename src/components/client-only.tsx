@@ -44,5 +44,5 @@ export function NoSSR({ children }: { children: React.ReactNode }) {
     return null
   }
 
-  return <div suppressHydrationWarning>{children}</div>
+  return <>{children}</>
 }

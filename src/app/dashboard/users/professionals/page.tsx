@@ -307,7 +307,7 @@ export default function ProfessionalsPage() {
       case "Ativo":
         return <Badge variant="default">Ativo</Badge>
       case "Ocupado":
-        return <Badge variant="secondary" className="bg-yellow-500 text-white">Ocupado</Badge>
+        return <Badge variant="warning">Ocupado</Badge>
       case "Inativo":
         return <Badge variant="outline">Inativo</Badge>
       default:
@@ -469,7 +469,7 @@ export default function ProfessionalsPage() {
                           </Badge>
                           {getStatusBadge(professional.status)}
                           {professional.isAvailable && professional.status === "Ativo" && (
-                            <Badge variant="default" className="bg-green-500">Disponível</Badge>
+                            <Badge variant="success">Disponível</Badge>
                           )}
                         </div>
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -806,7 +806,7 @@ export default function ProfessionalsPage() {
                     </Badge>
                     {getStatusBadge(selectedProfessional.status)}
                     {selectedProfessional.isAvailable && selectedProfessional.status === "Ativo" && (
-                      <Badge variant="default" className="bg-green-500">Disponível</Badge>
+                      <Badge variant="success">Disponível</Badge>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">

@@ -196,11 +196,11 @@ export default function DeliveriesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Em trânsito":
-        return <Badge variant="default" className="bg-blue-500 text-white">Em trânsito</Badge>
+        return <Badge variant="info">Em trânsito</Badge>
       case "Coletando":
-        return <Badge variant="secondary" className="bg-orange-500 text-white">Coletando</Badge>
+        return <Badge variant="warning">Coletando</Badge>
       case "Entregando":
-        return <Badge variant="default" className="bg-green-500 text-white">Entregando</Badge>
+        return <Badge variant="success">Entregando</Badge>
       default:
         return <Badge variant="outline" className="text-white bg-gray-500 border-gray-500">{status}</Badge>
     }
@@ -209,9 +209,9 @@ export default function DeliveriesPage() {
   const getDriverStatusBadge = (status: string) => {
     switch (status) {
       case "Disponível":
-        return <Badge variant="default" className="bg-green-500 text-white">Disponível</Badge>
+        return <Badge variant="success">Disponível</Badge>
       case "Em entrega":
-        return <Badge variant="secondary" className="bg-blue-500 text-white">Em entrega</Badge>
+        return <Badge variant="info">Em entrega</Badge>
       case "Offline":
         return <Badge variant="outline" className="text-white bg-gray-500 border-gray-500">Offline</Badge>
       default:
@@ -270,7 +270,7 @@ export default function DeliveriesPage() {
                 Monitore todas as entregas ativas na plataforma
               </p>
             </div>
-            <Badge variant="secondary" className="text-sm text-white bg-blue-500">
+            <Badge variant="info" className="text-sm">
               <Activity className="w-4 h-4 mr-1" />
               {activeDeliveries.length} entregas ativas
             </Badge>

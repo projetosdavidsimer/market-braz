@@ -15,10 +15,10 @@ export function HydrationBoundary({ children, fallback }: HydrationBoundaryProps
   }, [])
 
   if (!isHydrated) {
-    return <div suppressHydrationWarning>{fallback || children}</div>
+    return <>{fallback || null}</>
   }
 
-  return <div suppressHydrationWarning>{children}</div>
+  return <>{children}</>
 }
 
 // Componente específico para Radix UI
@@ -31,7 +31,7 @@ export function RadixHydrationBoundary({ children }: { children: React.ReactNode
 
   // Render same structure for SSR and client to avoid hydration mismatch
   return (
-    <div suppressHydrationWarning data-hydration-boundary="radix">
+    <div data-hydration-boundary="radix">
       {children}
     </div>
   )

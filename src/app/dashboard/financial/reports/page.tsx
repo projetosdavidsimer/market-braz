@@ -196,11 +196,11 @@ export default function ReportsPage() {
   ]
 
   const reportCategories = [
-    { name: "Financeiro", count: 2, color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-    { name: "Operacional", count: 1, color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-    { name: "Logística", count: 1, color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
-    { name: "Marketing", count: 1, color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-    { name: "Executivo", count: 1, color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" }
+    { name: "Financeiro", count: 2, variant: "success" as const },
+    { name: "Operacional", count: 1, variant: "info" as const },
+    { name: "Logística", count: 1, variant: "warning" as const },
+    { name: "Marketing", count: 1, variant: "secondary" as const },
+    { name: "Executivo", count: 1, variant: "destructive" as const }
   ]
 
   const quickMetrics = [
@@ -254,7 +254,7 @@ export default function ReportsPage() {
   const getCategoryBadge = (category: string) => {
     const categoryInfo = reportCategories.find(cat => cat.name === category)
     return (
-      <Badge className={categoryInfo?.color || "bg-gray-100 text-gray-800"}>
+      <Badge variant={categoryInfo?.variant || "outline"}>
         {category}
       </Badge>
     )
@@ -354,8 +354,8 @@ export default function ReportsPage() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {reportCategories.map((category, index) => (
                   <div key={index} className="text-center p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer">
-                    <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${category.color}`}>
-                      <FileText className="w-6 h-6" />
+                    <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="font-medium">{category.name}</h3>
                     <p className="text-sm text-muted-foreground">{category.count} relatórios</p>
